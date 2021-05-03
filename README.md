@@ -51,22 +51,22 @@ sudo apt-add-repository --yes --update ppa:ansible/ansible
 sudo apt install ansible
 ```
 
-1. Install ansible galaxy roles
+2. Install ansible galaxy roles
 
 ```bash
 ansible-galaxy install -p roles/ -r requirements.yaml 
 ansible-galaxy collection install -r requirements.yaml 
 ```
 
-1. I was having issues running `su - $USER` for each $USER that was added to the docker group, so their group membership is updated without a reboot.  Need to run this for each user manually for now
+3. I was having issues running `su - $USER` for each $USER that was added to the docker group, so their group membership is updated without a reboot.  Need to run this for each user manually for now
 
 ```bash
 sudo su - $USER
 ```
 
-1. This project only deploys one authelia user. Generate a hash for this users password to set in the next step.  See instructions [here](https://www.authelia.com/docs/configuration/authentication/file.html#passwords)
+4. This project only deploys one authelia user. Generate a hash for this users password to set in the next step.  See instructions [here](https://www.authelia.com/docs/configuration/authentication/file.html#passwords)
 
-1. Set the following env vars populated with your secrets
+5. Set the following env vars populated with your secrets
 
 ```bash
 export GRAFANA_ADMIN_PW=<secret> # This password will be set in grafana for the default user "admin"
@@ -76,7 +76,7 @@ export SMTP_PW=<secret> # SMTP password for email notifications
 export INIT_AUTH_USER_HASH=<secret> # Password hash previously generated
 ```
 
-1. Most variables, like directories, have defaults that should work fine. There are however several values that need to be set before running anything.
+6. Most variables, like directories, have defaults that should work fine. There are however several values that need to be set before running anything.
 
 * For all variables that are undefined, see comment inline for what's needed.
 * Replace all instances of `example.com` with your external domain that services will be available on.
@@ -89,11 +89,11 @@ ansible/roles/media/vars/main.yaml
 ansible/roles/traefik/vars/main.yaml
 ```
 
-1. Deploy
+7. Deploy
 
 ```bash
 ansible-playbook host_init.yaml
 ansible-playbook deploy_services.yaml
 ```
 
-1. Assuming all goes well, and that your server has ports 80/443 exposed to the internet, wait a bit and access your services at `<service>.<yourdomain>` ie; `https://sabnzbd.example.com`
+8. Assuming all goes well, and that your server has ports 80/443 exposed to the internet, wait a bit and access your services at `<service>.<yourdomain>` ie; `https://sabnzbd.example.com`
