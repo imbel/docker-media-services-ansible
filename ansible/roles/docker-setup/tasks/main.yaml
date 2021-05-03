@@ -1,0 +1,69 @@
+- name: Install bottle python package
+  pip:
+    name:
+      - docker
+      - docker-compose
+      - virtualenv
+      - setuptools
+      - jsondiff
+
+- name: Install python-yaml
+  apt:
+    name:
+    - python-yaml
+    state: present
+
+- name: Init a new swarm with default parameters
+  community.docker.docker_swarm:
+    state: present
+
+- name: Create internal docker network
+  community.docker.docker_network:
+    name: proxy-internal
+    driver: overlay
+    attachable: yes
+
+- name: Create grafana admin secret
+  community.docker.docker_secret:
+    name: grafana_admin
+    data: "{{ lookup('env', 'GRAFANA_ADMIN_PW') | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: Create authelia jwt token secret
+  community.docker.docker_secret:
+    name: authelia_jwt_secret
+    data: "{{ lookup('env', 'AUTHELIA_JWT_TOKEN') | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: Create authelia session secret
+  community.docker.docker_secret:
+    name: authelia_session_secret
+    data: "{{ lookup('env', 'AUTHELIA_SESSION_SECRET') | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: Create smtp server secret
+  community.docker.docker_secret:
+    name: smtp_pw
+    data: "{{ lookup('env', 'SMTP_PW') | b64encode }}"
+    data_is_b64: true
+    state: present
+
+- name: check if loki logging driver is installed
+  shell: docker plugin ls | grep loki
+  ignore_errors: true
+  register: driver_check
+
+- name: loki logging driver missing..installing
+  command: docker plugin install grafana/loki-docker-driver:latest --alias loki --grant-all-permissions
+  when: driver_check.rc!=0
+  notify: restart_docker
+
+- name: Force docker restart handler to run
+  meta: flush_handlers
+
+- name: ensure logging driver is enabled
+  command: docker plugin enable loki
+  when: driver_check.rc!=0

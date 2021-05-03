@@ -1,0 +1,67 @@
+###############################################################
+#                   Authelia configuration                    #
+###############################################################
+
+host: 0.0.0.0
+port: 9091
+log_level: debug
+theme: dark
+
+# https://docs.authelia.com/configuration/miscellaneous.html#default-redirection-url
+default_redirection_url: {{ config.settings.authelia.redirect_url }}
+
+totp:
+  issuer: authelia.com
+  # Validity time. Formula to calculate is period + (period * skew * 2)
+  # This equals 90s
+  period: 30
+  skew: 1
+
+authentication_backend:
+  file:
+    path: {{ config.settings.authelia.users_auth_file_path }}
+    password:
+      algorithm: argon2id
+      iterations: 1
+      salt_length: 16
+      parallelism: 8
+      memory: 512 # blocks this much of the RAM. Tune this.
+
+# TODO: tune this for internal services to bypass 2fa
+access_control:
+  default_policy: deny
+  rules:
+    # - domain: authelia.example.com
+    #   policy: bypass
+    - domain:
+        - {{ config.settings.authelia.star_domain }}
+        - {{ config.settings.authelia.root_domain }}
+      subject: "group:users"
+      policy: two_factor
+
+session:
+  name: authelia_session
+  expiration: 3600 # 4 hour
+  inactivity: 900 # 5 minutes
+  domain: {{ config.settings.authelia.root_domain }}
+
+# DDoS attempt protection.  3 failed attempts over 2 minutes == 300s lockout
+regulation:
+  max_retries: 3
+  find_time: 120
+  ban_time: 300
+
+# Session storage.  Local
+# TODO: move to external db at some point
+storage:
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  smtp:
+    username: {{ config.settings.authelia.smtp_user }}
+    host: {{ config.settings.authelia.smtp_host }}
+    port: {{ config.settings.authelia.smtp_port }}
+    sender: {{ config.settings.authelia.smtp_user }}
+    subject: "[Authelia] {title}"
+

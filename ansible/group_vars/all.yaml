@@ -1,0 +1,4 @@
+media_username: media
+media_uid: "1010"
+local_user: ubuntu # use whatever local user you want added to docker group, default assuming ubuntu on ec2
+docker_gid: "998"

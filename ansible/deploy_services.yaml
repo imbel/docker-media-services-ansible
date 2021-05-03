@@ -1,0 +1,8 @@
+- name: deploy services
+  hosts: localhost
+  become: true
+  become_method: sudo
+
+  roles:
+    - role: traefik
+    - role: media

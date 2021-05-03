@@ -1,0 +1,69 @@
+- name: create config dirs
+  file:
+    path: "{{ item.value.config.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.config.perm }}"
+  loop: "{{ lookup('dict', config.directories) }}"
+  notify:
+  - redeploy
+
+- name: generate docker compose file(s)
+  template:
+    src: "{{ item.key }}/docker-compose.yaml.j2"
+    dest: "docker/{{ item.key }}/docker-compose.yml"
+  with_dict: "{{ config.settings }}"
+  notify:
+  - redeploy
+
+- name: generate authelia config
+  template:
+    src: "authelia/config/configuration.yml.j2"
+    dest: "{{ config.directories.authelia.config.path }}/configuration.yml"
+    owner: "{{ media_uid }}"
+    mode: "{{ config.directories.authelia.config.perm }}"
+  notify:
+  - redeploy
+
+- name: generate authelia users file
+  template:
+    src: "authelia/config/users_database.yml.j2"
+    dest: "{{ config.directories.authelia.config.path }}/users_database.yml"
+    owner: "{{ media_uid }}"
+    mode: "{{ config.directories.authelia.config.perm }}"
+  notify:
+  - redeploy
+
+- name: insert auth hash to config
+  lineinfile:
+    dest: "{{ config.directories.authelia.config.path }}/users_database.yml"
+    line: "    password: \"{{ lookup('env', 'INIT_AUTH_USER_HASH') }}\""
+    insertafter: 'displayname:.*'
+  notify:
+  - redeploy
+
+- name: copy single monitoring config files
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ media_uid }}"
+    mode: "{{ config.directories.grafana.config.perm }}"
+  with_items:
+    - { src: "templates/monitoring/grafana_config/datasource.yml", dest: "{{ config.directories.grafana.datasources.path }}/" }
+    - { src: "templates/monitoring/grafana_config/dashboards.yml", dest: "{{ config.directories.grafana.dashboards.path }}/" }
+    - { src: "templates/monitoring/loki_config/loki_config.yml", dest: "{{ config.directories.loki.config.path }}/" }
+    - { src: "templates/monitoring/prometheus_config/prometheus.yml", dest: "{{ config.directories.prometheus.config.path }}/" }
+    - { src: "templates/monitoring/promtail_config/promtail-config.yaml", dest: "{{ config.directories.promtail.config.path }}/" }
+  notify:
+  - redeploy
+
+- name: copy grafana dashboard definitions
+  copy:
+    src: "{{ item }}"
+    dest: "{{ config.directories.grafana.dashboard_definitions.path }}/"
+    owner: "{{ media_uid }}"
+    mode: "{{ config.directories.grafana.config.perm }}"
+  with_fileglob:
+    - templates/monitoring/grafana_config/dashboards/*
+  notify:
+  - redeploy

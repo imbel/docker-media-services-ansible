@@ -1,0 +1,5 @@
+roles:
+  - name: docker-install
+    src: nickjj.docker
+collections:
+  - name: community.docker

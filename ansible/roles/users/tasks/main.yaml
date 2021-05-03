@@ -1,0 +1,4 @@
+- name: Create media service user and add to groups
+  ansible.builtin.user:
+    name: "{{ media_username }}"
+    uid: "{{ media_uid }}"

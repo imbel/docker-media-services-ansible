@@ -1,0 +1,23 @@
+http:
+  middlewares:
+    authelia:
+      forwardAuth:
+        address: {{ config.settings.traefik.auth_redirect }}
+        authResponseHeaders:
+        - Remote-User
+        - Remote-Groups
+        trustForwardHeader: true
+    authelia-secure-chain:
+      chain:
+        middlewares:
+        - authelia
+        - middlewares-rate-limit
+    internal-whitelist:
+      ipwhitelist:
+        sourcerange:
+        - "{{ config.settings.traefik.internal_whitelist }}"
+    middlewares-rate-limit:
+      rateLimit:
+        average: {{ config.settings.traefik.rate_limit_average }}
+        burst: {{ config.settings.traefik.rate_limit_burst }}
+        

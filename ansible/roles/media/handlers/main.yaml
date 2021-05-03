@@ -1,0 +1,27 @@
+- name: Remove media stack for redeploy
+  docker_stack:
+    state: absent
+    name: media
+    compose:
+      - docker/authelia/docker-compose.yml
+      - docker/jellyfin/docker-compose.yml
+      - docker/monitoring/docker-compose.yml
+      - docker/radarr/docker-compose.yml
+      - docker/sabnzbd/docker-compose.yml
+      - docker/sonarr/docker-compose.yml
+  listen: redeploy
+
+
+- name: Deploy media stack
+  docker_stack:
+    state: present
+    name: media
+    prune: yes
+    compose:
+      - docker/authelia/docker-compose.yml
+      - docker/jellyfin/docker-compose.yml
+      - docker/monitoring/docker-compose.yml
+      - docker/radarr/docker-compose.yml
+      - docker/sabnzbd/docker-compose.yml
+      - docker/sonarr/docker-compose.yml
+  listen: redeploy

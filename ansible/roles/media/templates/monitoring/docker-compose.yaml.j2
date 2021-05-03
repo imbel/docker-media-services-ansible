@@ -1,0 +1,139 @@
+version: "3.8"
+
+services:
+  prometheus:
+    image: prom/prometheus:{{ config.settings.monitoring.prom_ver }}
+    user: "{{ media_uid }}:{{ docker_gid }}"
+    networks:
+      - proxy
+    ports:
+      - "9090:9090"
+    volumes:
+      - {{ config.directories.prometheus.config.path }}:/etc/prometheus/
+      # Storage directory
+      - {{ config.directories.prometheus.storage.path }}:/prometheus
+    deploy:
+      labels:
+        # Backend service, not behind proxy.
+        - traefik.enable=false
+
+  node-exporter:
+    image: prom/node-exporter:{{ config.settings.monitoring.node_ex_ver }}
+    user: "{{ media_uid }}:{{ docker_gid }}"
+    networks:
+      - proxy
+    ports:
+      - "9100:9100"
+    volumes:
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - /proc:/host/proc:ro
+      - /etc/hostname:/etc/nodename
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.textfile.directory=/home/'
+      - '--collector.meminfo_numa'
+      - '--no-collector.ipvs'
+    deploy: 
+      labels:
+        # Backend service, not behind proxy.
+        - traefik.enable=false
+
+  cadvisor:
+    image: google/cadvisor:{{ config.settings.monitoring.cadvisor_ver }}
+    user: "{{ media_uid }}:{{ docker_gid }}"
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    deploy:
+      labels:
+        # Backend service, not behind proxy.
+        - traefik.enable=false
+    networks:
+      - proxy
+
+  promtail:
+    image: grafana/promtail:{{ config.settings.monitoring.promtail_ver }}
+    user: "{{ media_uid }}:{{ docker_gid }}"
+    volumes:
+      - {{ config.directories.promtail.logs.path }}:/var/log/traefik
+      - {{ config.directories.promtail.config.path }}:/etc/promtail/config
+    command: -config.file=/etc/promtail/config/promtail-config.yaml
+    deploy:
+      labels:
+        # Backend service, not behind proxy.
+        - traefik.enable=false
+    networks:
+      - proxy
+  
+  loki:
+    image: grafana/loki:{{ config.settings.monitoring.loki_ver }}
+    user: "{{ media_uid }}:{{ docker_gid }}"
+    ports:
+      - "3100:3100"
+    volumes:
+      - {{ config.directories.loki.config.path }}:/etc/loki
+      - {{ config.directories.loki.storage.path }}:/loki
+    command: -config.file=/etc/loki/loki_config.yml && —log.level=debug
+    deploy:
+      labels:
+        # Backend service, not behind proxy.
+        - traefik.enable=false
+    networks:
+      - proxy
+
+  grafana:
+    image: grafana/grafana:{{ config.settings.monitoring.grafana_ver }}
+    user: "{{ media_uid }}:{{ docker_gid }}"
+    networks:
+      - proxy
+    ports:
+      - "3000:3000"
+    secrets:
+      - smtp_pw
+      - grafana_admin
+    volumes:
+      - {{ config.directories.grafana.config.path }}:/var/lib/grafana
+      - {{ config.directories.grafana.storage.path }}:/etc/grafana/provisioning
+    deploy:
+      labels:
+        - traefik.http.routers.grafana.rule=Host({{ config.settings.monitoring.grafana_host }})
+        - traefik.http.routers.grafana.tls=true
+        - traefik.http.routers.grafana.tls.certresolver=lets-encrypt
+        - traefik.http.routers.grafana.entrypoints=https
+        - traefik.http.services.grafana.loadbalancer.server.port=3000
+        # Internal whitelist if 2fa is disabled
+        # - traefik.http.routers.grafana.middlewares=internal-whitelist@file
+        # 2fa
+        - traefik.http.routers.grafana.middlewares=authelia-secure-chain@file
+        - traefik.enable=true
+    environment:
+      # Local admin user secret
+      - GF_SECURITY_ADMIN_PASSWORD__FILE=/run/secrets/grafana_admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_DOMAIN={{ config.settings.monitoring.grafana_root_domain }}
+      - GF_SMTP_ENABLED=true
+      # Format is server:port
+      - GF_SMTP_HOST={{ config.settings.monitoring.smtp_server }}
+      - GF_SMTP_USER={{ config.settings.monitoring.smtp_user }}
+      - GF_SMTP_PASSWORD__FILE=/run/secrets/smtp_pw
+      - GF_SMTP_FROM_ADDRESS={{ config.settings.monitoring.smtp_user }}
+      # Format comma separated, no spaces
+      - GF_INSTALL_PLUGINS={{  config.settings.monitoring.grafana_plugins }}
+secrets:
+  smtp_pw:
+    external: true
+  grafana_admin:
+    external: true
+networks:
+  proxy:
+    # This network was created outside of docker compose.  see ../network
+    external:
+      name: proxy-internal

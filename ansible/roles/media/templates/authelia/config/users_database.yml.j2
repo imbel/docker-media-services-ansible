@@ -1,0 +1,7 @@
+users:
+  {{ config.settings.authelia.init_auth_user }}:
+    displayname: {{ config.settings.authelia.init_auth_user_display }}
+    email: {{ config.settings.authelia.init_auth_user_email }}
+    groups:
+      - admins
+      - users

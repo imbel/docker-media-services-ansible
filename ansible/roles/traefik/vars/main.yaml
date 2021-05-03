@@ -1,0 +1,18 @@
+config:
+  directories:
+    traefik:
+      logs:
+        path: /var/log/traefik
+        perm: "0750"
+      config:
+        path: /etc/traefik/config
+        perm: "0750"
+  settings:
+    traefik:
+      version: latest
+      hostname: "`traefik.example.com`"
+      auth_redirect: "http://tasks.authelia:9091/api/verify?rd=https://authelia.example.com"
+      internal_whitelist: # single cidr block applied to internal services
+      letsencrypt_email: # email address for cert expiry notifications
+      rate_limit_average: 20
+      rate_limit_burst: 80

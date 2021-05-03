@@ -1,0 +1,126 @@
+config:
+  directories:
+    authelia:
+      config:
+        path: /etc/authelia/config
+        perm: "0750"
+    sonarr:
+      config:
+        path: /etc/sonarr/config
+        perm: "0750"
+      storage:
+        path: /media/nas/tv
+        perm: "0750"
+      tmp:
+        path: /media/nas/incomplete
+        perm: "0750"
+    sabnzbd:
+      config:
+        path: /etc/sabnzbd/config
+        perm: "0750"
+      # All downloads are processed and moved by radarr/sonarr.  sab only needs a tmp storage dir
+      tmp:
+        path: /media/nas/incomplete
+        perm: "0750"
+    radarr:
+      config:
+        path: /etc/radarr/config
+        perm: "0750"
+      storage:
+        path: /media/nas/movies
+        perm: "0750"
+      tmp:
+        path: /media/nas/incomplete
+        perm: "0750"
+    loki:
+      config:
+        path: /etc/loki/config
+        perm: "0750"
+      storage:
+        path: /etc/loki/data
+        perm: "0750"
+    grafana:
+      config:
+        path: /etc/grafana/lib
+        perm: "0750"
+      storage:
+        path: /etc/grafana/provisioning
+        perm: "0750"
+      datasources:
+        path: /etc/grafana/provisioning/datasources
+        perm: "0750"
+      dashboards:
+        path: /etc/grafana/provisioning/dashboards
+        perm: "0750"
+      dashboard_definitions:
+        path: /etc/grafana/provisioning/dashboards/media-stack
+        perm: "0750"
+    prometheus:
+      config:
+        path: /etc/prometheus/config
+        perm: "0750"
+      storage:
+        path: /etc/prometheus/data
+        perm: "0750"
+    promtail:
+      config:
+        path: /etc/promtail/config
+        perm: "0750"
+      logs:
+        path: /var/log/traefik
+        perm: "0750"
+    jellyfin:
+      config:
+        path: /etc/jellyfin/config
+        perm: "0750"
+      storage:
+        path: /media/nas
+        perm: "0750"
+      tmp:
+        path: /media/cache
+        perm: "0750"
+
+  settings:
+    authelia:
+      auth_ver: latest
+      authelia_host: "`authelia.example.com`"
+      # configuration.yml vars
+      redirect_url: "https://authelia.example.com"
+      users_auth_file_path: /config/users_database.yml
+      star_domain: '"*.example.com"'
+      root_domain: '"example.com"'
+      smtp_host: # hostname of smtp server for outbound emails, must support basic auth
+      smtp_port: "587" # default smtp tls port, update if needed
+      init_auth_user: authelia_user # initial admin user
+      init_auth_user_display: auth
+      init_auth_user_email: # initial admin user email address
+      smtp_user: # sender email to auth to smtp server
+
+    sonarr:    
+      sonarr_ver: latest
+      sonarr_host: "`sonarr.example.com`"
+
+    sabnzbd:
+      sab_ver: latest
+      sab_host: "`sabnzbd.example.com`"
+
+    radarr:
+      radarr_ver: latest
+      radarr_host: "`radarr.example.com`"
+
+    monitoring:
+      prom_ver: latest
+      node_ex_ver: latest
+      cadvisor_ver: latest
+      promtail_ver: latest
+      loki_ver: latest
+      grafana_ver: latest
+      grafana_host: "`grafana.example.com`"
+      grafana_root_domain: example.com
+      smtp_server: # hostname of smtp server for outbound emails, must support basic auth. format: <hostname>:<port>
+      smtp_user: # sender email to auth to smtp server
+      grafana_plugins: grafana-clock-panel,grafana-piechart-panel,grafana-worldmap-panel
+        
+    jellyfin:
+      jelly_ver: latest
+      jelly_host: "`jelly.example.com`"

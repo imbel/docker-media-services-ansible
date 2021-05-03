@@ -1,0 +1,41 @@
+- name: create config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.traefik }}"
+
+- name: create cert store
+  file:
+    path: "{{ config.directories.traefik.config.path }}/acme.json"
+    state: touch
+    mode: 0700
+    owner: "{{ media_uid }}"
+
+- name: generate docker compose file(s)
+  template:
+    src: "{{ item.key }}/docker-compose.yaml.j2"
+    dest: "docker/{{ item.key }}/docker-compose.yaml"
+  with_dict: "{{ config.settings }}"
+
+- name: generate static config
+  template:
+    src: "traefik/config/traefik.yaml.j2"
+    dest: "{{ config.directories.traefik.config.path }}/traefik.yml"
+    owner: "{{ media_uid }}"
+    mode: "{{ config.directories.traefik.config.perm }}"
+
+- name: generate dynamic config
+  template:
+    src: "traefik/config/traefik_dynamic.yaml.j2"
+    dest: "{{ config.directories.traefik.config.path }}/traefik_dynamic.yml"
+    owner: "{{ media_uid }}"
+    mode: "{{ config.directories.traefik.config.perm }}"
+
+- name: deploy traefik proxy
+  docker_compose:
+    debug: yes
+    recreate: always
+    state: present
+    project_src: docker/traefik
