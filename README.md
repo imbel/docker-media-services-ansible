@@ -54,11 +54,11 @@ sudo apt install ansible
 2. Install ansible galaxy roles
 
 ```bash
-ansible-galaxy install -p roles/ -r requirements.yaml 
+ansible-galaxy install -p ansible/roles/ -r requirements.yaml 
 ansible-galaxy collection install -r requirements.yaml 
 ```
 
-3. This project only deploys one authelia user. Generate a hash for this users password to set in the next step.  See instructions [here](https://www.authelia.com/docs/configuration/authentication/file.html#passwords)
+3. This project only deploys one authelia user. Generate a hash for this users password to set in the next step.  See instructions [here](https://www.authelia.com/docs/configuration/authentication/file.html#passwords).  Note that this requires docker to generate the hash using a default authelia container. Since docker hasn't been installed on this host yet, use another machine.
 
 4. Set the following env vars populated with your secrets
 
@@ -67,13 +67,13 @@ export GRAFANA_ADMIN_PW=<secret> # This password will be set in grafana for the 
 export AUTHELIA_JWT_TOKEN=<secret> # https://www.authelia.com/docs/configuration/miscellaneous.html#jwt-secret
 export AUTHELIA_SESSION_SECRET=<secret> # Secret used to encrypt session data
 export SMTP_PW=<secret> # SMTP password for email notifications
-export INIT_AUTH_USER_HASH=<secret> # Password hash previously generated
+export INIT_AUTH_USER_HASH=<secret> # Password hash previously generated. Note due to spaces and special characters this will likely need to by wrapped in single quotes
 ```
 
 5. Most variables, like directories, have defaults that should work fine. There are however several values that need to be set before running anything.
 
 * For all variables that are undefined, see comment inline for what's needed.
-* Replace all instances of `example.com` with your external domain that services will be available on.
+* Replace all instances of `imb3l.net` with your external domain that services will be available on.
 * Versions are all defaulted to latest. Tag specific versions, or don't.
 
 var files to reference
@@ -96,4 +96,4 @@ ansible-playbook deploy_services.yaml
 sudo su - $USER
 ```
 
-8. Assuming all goes well, and that your server has ports 80/443 exposed to the internet, wait a bit and access your services at `<service>.<yourdomain>` ie; `https://sabnzbd.example.com`
+8. Assuming all goes well, and that your server has ports 80/443 exposed to the internet, wait a bit and access your services at `<service>.<yourdomain>` ie; `https://sabnzbd.imb3l.net`

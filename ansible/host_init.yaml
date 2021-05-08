@@ -7,10 +7,4 @@
     - role: users
     - role: docker-install
       docker__users: ["{{ local_user }}", "{{ media_username }}"]
-      docker__default_daemon_json: |
-        "log-driver": "loki",
-          "log-opts": {
-            "loki-url": "http://localhost:3100/loki/api/v1/push",
-            "loki-batch-size": "400"
-          }
     - role: docker-setup

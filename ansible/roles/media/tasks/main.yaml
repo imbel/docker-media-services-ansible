@@ -1,10 +1,99 @@
-- name: create config dirs
+- name: create authelia config dirs
   file:
-    path: "{{ item.value.config.path }}"
+    path: "{{ item.value.path }}"
     state: directory
     owner: "{{ media_uid }}"
-    mode: "{{ item.value.config.perm }}"
-  loop: "{{ lookup('dict', config.directories) }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.authelia }}"
+  notify:
+  - redeploy
+
+- name: create sonarr config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.sonarr }}"
+  notify:
+  - redeploy
+
+- name: create sabnzbd config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.sabnzbd }}"
+  notify:
+  - redeploy
+
+- name: create radarr config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.radarr }}"
+  notify:
+  - redeploy
+
+- name: create loki config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.loki }}"
+  notify:
+  - redeploy
+
+- name: create prometheus config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.prometheus }}"
+  notify:
+  - redeploy
+
+- name: create promtail config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.promtail }}"
+  notify:
+  - redeploy
+
+- name: create jellyfin config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.jellyfin }}"
+  notify:
+  - redeploy
+
+- name: create sabnzbd config dirs
+  file:
+    path: "{{ item.value.path }}"
+    state: directory
+    owner: "{{ media_uid }}"
+    mode: "{{ item.value.perm }}"
+  with_dict: "{{ config.directories.sabnzbd }}"
+  notify:
+  - redeploy
+
+- name: create compose file directory
+  file:
+    path: "docker/{{ item.key }}"
+    state: directory
+    owner: "{{ media_uid }}"
+  with_dict: "{{ config.settings }}"
   notify:
   - redeploy
 

@@ -353,5 +353,6 @@ MigrationBackup/
 ansible/roles/docker-install
 
 # complete docker-compose
+ansible/docker
 **/docker-compose.yaml
 **/docker-compose.yml

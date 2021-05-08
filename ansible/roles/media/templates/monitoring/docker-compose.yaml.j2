@@ -102,6 +102,7 @@ services:
     volumes:
       - {{ config.directories.grafana.config.path }}:/var/lib/grafana
       - {{ config.directories.grafana.storage.path }}:/etc/grafana/provisioning
+      - {{ config.directories.grafana.base.path }}:/etc/grafana
     deploy:
       labels:
         - traefik.http.routers.grafana.rule=Host({{ config.settings.monitoring.grafana_host }})

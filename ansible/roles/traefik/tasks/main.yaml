@@ -6,6 +6,15 @@
     mode: "{{ item.value.perm }}"
   with_dict: "{{ config.directories.traefik }}"
 
+- name: create compose file directory
+  file:
+    path: "docker/{{ item.key }}"
+    state: directory
+    owner: "{{ media_uid }}"
+  with_dict: "{{ config.settings }}"
+  notify:
+  - redeploy
+
 - name: create cert store
   file:
     path: "{{ config.directories.traefik.config.path }}/acme.json"

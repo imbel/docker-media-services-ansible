@@ -40,6 +40,9 @@ config:
         path: /etc/loki/data
         perm: "0750"
     grafana:
+      base:
+        path: /etc/grafana
+        perm: "0750"
       config:
         path: /etc/grafana/lib
         perm: "0750"

@@ -61,6 +61,12 @@
   when: driver_check.rc!=0
   notify: restart_docker
 
+- name: insert logging driver into daemon config
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+  notify: restart_docker
+
 - name: Force docker restart handler to run
   meta: flush_handlers
 
